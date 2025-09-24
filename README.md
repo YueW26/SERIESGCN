@@ -1,114 +1,156 @@
 
+# SeriesGCN: Capturing High-Order Covariance with Message Passing
 
-## Requirements
-- python 3
-- see `requirements.txt`
+This repository provides the official implementation of the paper:
 
+**"SeriesGCN: Capturing High-Order Covariance with Message Passing"**  
+*(Under review at ICLR 2026)*
 
-## Data Preparation
+---
 
-### Step1: Download METR-LA and PEMS-BAY data from [Google Drive](https://drive.google.com/open?id=10FOTa6HXPqX8Pf5WRoRwcFnW9BrNZEIX) or [Baidu Yun](https://pan.baidu.com/s/14Yy9isAIZYdU__OYEQGa_g) links provided by [DCRNN](https://github.com/liyaguang/DCRNN).
+## Motivation
 
-### Step2: Process raw data 
+Multivariate time series forecasting (MTSF) is essential in domains such as energy forecasting, finance, and climate science.  
+Recent graph-based methods encode pairwise correlations as a **static adjacency matrix** and leverage Graph Neural Networks (GNNs) for forecasting.  
+
+However, **static graphs fail in dynamic correlation scenarios**, where cross-variable dependencies evolve rapidly (e.g., energy prices under political shocks, or load under extreme weather).  
+Our experiments show that many popular GNNs generalize poorly in such settings and can even be outperformed by structure-agnostic baselines.
+
+---
+
+## Contributions
+
+1. **Identify Limitations**  
+   - Systematically reveal how existing GNNs underperform in dynamic correlation regimes.  
+   - Introduce quantitative measures (first-/second-order moments) to characterize correlation dynamics.
+
+2. **New Model: SeriesGCN**  
+   - (D1) **High-order moment message passing** to capture beyond pairwise covariance.  
+   - (D2) **Dual graph propagation** combining static and dynamic views.  
+   - (D3) **Frequency separation** to distinguish low- and high-frequency representations.  
+
+3. **Extensive Evaluation**  
+   - **Synthetic datasets** with tunable correlation dynamics (Easy → Very Hard).  
+   - **Real-world benchmarks** (Exchange Rate, Electricity, Traffic, BigElectricity).  
+   - Up to **40% performance gain** in dynamic correlation scenarios.
+
+---
+
+## Repository Structure
 
 ```
-# Create data directories
-mkdir -p data/{METR-LA,PEMS-BAY}
 
-# METR-LA
-python generate_training_data.py --output_dir=data/METR-LA --traffic_df_filename=data/metr-la.h5
+SeriesGCN/
+├── data/                   # Synthetic + Real-world datasets
+│   ├── SYNTHETIC\_EASY/
+│   ├── EXCHANGE/
+│   ├── ELECTRICITY/
+│   ├── TRAFFIC/
+│   └── BIGELECTRICITY/
+│
+├── models/
+│   ├── stgcn.py            # Yu et al., 2018
+│   ├── graph\_wavenet.py    # Wu et al., 2019
+│   ├── mtgnn.py            # Wu et al., 2020
+│   ├── tpgnn.py            # Liu et al., 2022
+│   ├── fouriergnn.py       # Yi et al., 2023
+│   └── seriesgcn.py        # Our proposed SeriesGCN
+│
+├── utils/
+│   ├── graph\_utils.py      # adjacency construction, TCV/TGV/GSD metrics
+│   ├── metrics.py          # MAE, RMSE, MAPE
+│   ├── data\_loader.py      # sliding-window data loader
+│   └── visualizations.py   # correlation heatmaps, dynamic plots
+│
+├── scripts/
+│   ├── run\_experiments\_ab.sh    # ablation study automation
+│   ├── run\_synthetic.sh         # synthetic dataset experiments
+│   ├── preprocess\_dataset.py    # preprocess (date/time column fixes)
+│   └── dynamic\_corr\_compare.py  # correlation statistics across datasets
+│
+├── outputs\_dynamic\_corr/   # correlation & adjacency visualizations
+├── train.py                # unified training entry
+└── README.md
 
-# PEMS-BAY
-python generate_training_data.py --output_dir=data/PEMS-BAY --traffic_df_filename=data/pems-bay.h5
+````
 
-```
+---
 
-## Dataset Compatibility
+## Getting Started
 
-This implementation now supports automatic dataset detection and configuration for multiple datasets:
+### 1. Installation
+```bash
+conda create -n seriesgcn python=3.9
+conda activate seriesgcn
+pip install -r requirements.txt
+````
 
-### Supported Datasets:
-1. **METR-LA** (default): 207 nodes, uses `adj_mx.pkl`
-2. **PEMS-BAY**: 325 nodes, uses `adj_mx_bay.pkl`  
-3. **France**: 10 nodes, uses `adj_mx_france.pkl`
+### 2. Data Preparation
 
-### Auto-Detection:
-The system automatically detects the dataset type based on the `--data` parameter and configures:
-- Number of nodes (`--num_nodes`)
-- Adjacency matrix file (`--adjdata`)
-- Save path (`--save`)
-
-### Usage Examples:
+* **Synthetic datasets**: generated with adjustable correlation ratios (`0.2, 0.4, 0.6, 0.8`).
+* **Real-world datasets**: Exchange Rate, Electricity, Traffic, BigElectricity (ENTSO-E).
 
 ```bash
-# France dataset (auto-detected: 10 nodes, adj_mx_france.pkl)
-python train.py --data data/FRANCE --gcn_bool --adjtype doubletransition --addaptadj --randomadj --epochs 50
-
-# METR-LA dataset (auto-detected: 207 nodes, adj_mx.pkl)
-python train.py --data data/METR-LA --gcn_bool --adjtype doubletransition --addaptadj --randomadj --epochs 50
-
-# PEMS-BAY dataset (auto-detected: 325 nodes, adj_mx_bay.pkl)
-python train.py --data data/PEMS-BAY --gcn_bool --adjtype doubletransition --addaptadj --randomadj --epochs 50
-
-# Manual override (if needed)
-python train.py --data data/CUSTOM --num_nodes 100 --adjdata data/sensor_graph/custom.pkl --gcn_bool --adjtype doubletransition --addaptadj --randomadj --epochs 50
+python scripts/preprocess_dataset.py --src data/SYNTHETIC_EASY/synthetic.csv
 ```
 
-## Train Commands
-
-```
-python train.py --gcn_bool --adjtype doubletransition --addaptadj  --randomadj --epoch 1
-```
-
-
- python train.py --data data/FRANCE --gcn_bool --adjtype doubletransition --addaptadj --randomadj --epochs 10
-
- python train.py --data data/FRANCE_FIXED --gcn_bool --adjtype doubletransition --addaptadj --randomadj --epochs 10
-```
-
-## France Dataset Issue and Fix
-
-### 🚨 Problem with Original France Dataset
-The original France dataset (`data/FRANCE`) had significant data quality issues:
-- **Scale Problem**: Values ranged from 0-61,490 (vs METR-LA: 0-70)
-- **High Zero Ratio**: 43.2% zeros in some columns
-- **Poor Performance**: MAE: 506.8, MAPE: 0.54, RMSE: 1020.3
-
-### ✅ Solution: Data Preprocessing and Normalization
-We created a data fixing script that addresses these issues:
+### 3. Run Training
 
 ```bash
-# Fix the France dataset
-python fix_france_data.py --step all
+python train.py --data data/EXCHANGE --device cuda:0 \
+  --batch_size 64 --epochs 10 --seq_length 12 --pred_length 12 \
+  --learning_rate 0.001 --dropout 0.3 --nhid 64 \
+  --gcn_bool --addaptadj --randomadj --adjtype doubletransition
 ```
 
-This script:
-1. **Handles zero values** through interpolation
-2. **Applies log transformation** to reduce scale
-3. **Normalizes to 0-70 range** (like METR-LA)
-4. **Removes outliers** beyond 3 standard deviations
-5. **Creates proper time indexing**
-
-### 📊 Performance After Fix
-| Dataset | MAE | MAPE | RMSE |
-|---------|-----|------|------|
-| Original France | 506.8 | 0.54 | 1020.3 |
-| **Fixed France** | **1.93** | **0.048** | **3.57** |
-| METR-LA | 3.8 | 0.11 | 7.6 |
-
-The fixed France dataset now **outperforms** METR-LA!
-
-### 💡 Usage with Fixed France Dataset
+### 4. Ablation Study
 
 ```bash
-# Train with fixed France dataset (recommended)
-python train.py --data data/FRANCE_FIXED --gcn_bool --adjtype doubletransition --addaptadj --randomadj --epochs 50
-
-# Test with fixed France dataset
-python test.py --data data/FRANCE_FIXED
+EPOCHS=10 WANDB_MODE=disabled WANDB_PROJECT=SeriesGCN \
+RESULTS_CSV=./results_EXCHANGE.csv \
+DATA_LIST="data/EXCHANGE" \
+BATCH_LIST="64 128 256" \
+LR_LIST="0.001 0.0001 0.00001" \
+EXP_ID=1 bash scripts/run_experiments_ab.sh
 ```
 
-The system automatically detects `FRANCE_FIXED` and configures:
-- Number of nodes: 10
-- Adjacency matrix: `data/sensor_graph/adj_mx_france.pkl`
-- Save path: `./garage/france_fixed/`
+---
+
+## Reproducing Paper Results
+
+### Synthetic Benchmarks
+
+* Difficulty levels: **Easy → Very Hard**.
+* Metrics: MAE / RMSE + correlation dynamics (TCV, TGV, GSD).
+* Ablation: SeriesGCN’s (D1)+(D2) boosts accuracy by up to **40%** in dynamic settings.
+
+### Real-World Benchmarks
+
+* **Traffic**: highly periodic, validates robustness of static graphs.
+* **Exchange Rate**: weak correlations, highlights limits of baselines.
+* **Electricity & BigElectricity**: strong non-stationarity, SeriesGCN shows clear gains.
+
+---
+
+## Citation
+
+If you find this repository useful, please cite:
+
+```
+@inproceedings{anonymous2026seriesgcn,
+  title={SeriesGCN: Capturing High-Order Covariance with Message Passing},
+  author={Anonymous},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2026}
+}
+```
+
+---
+
+## Future Work
+
+* Extend SeriesGCN to **probabilistic forecasting**.
+* Explore **equivariance–expressivity trade-offs** in dynamic graphs.
+* Benchmarks on **climate & energy systems** with higher spatio-temporal resolution.
+
+```

@@ -34,45 +34,6 @@ Our experiments show that many popular GNNs generalize poorly in such settings a
    - **Real-world benchmarks** (Exchange Rate, Electricity, Traffic, BigElectricity).  
    - Up to **40% performance gain** in dynamic correlation scenarios.
 
----
-
-## Repository Structure
-
-```
-
-SeriesGCN/
-├── data/                   # Synthetic + Real-world datasets
-│   ├── SYNTHETIC\_EASY/
-│   ├── EXCHANGE/
-│   ├── ELECTRICITY/
-│   ├── TRAFFIC/
-│   └── BIGELECTRICITY/
-│
-├── models/
-│   ├── stgcn.py            # Yu et al., 2018
-│   ├── graph\_wavenet.py    # Wu et al., 2019
-│   ├── mtgnn.py            # Wu et al., 2020
-│   ├── tpgnn.py            # Liu et al., 2022
-│   ├── fouriergnn.py       # Yi et al., 2023
-│   └── seriesgcn.py        # Our proposed SeriesGCN
-│
-├── utils/
-│   ├── graph\_utils.py      # adjacency construction, TCV/TGV/GSD metrics
-│   ├── metrics.py          # MAE, RMSE, MAPE
-│   ├── data\_loader.py      # sliding-window data loader
-│   └── visualizations.py   # correlation heatmaps, dynamic plots
-│
-├── scripts/
-│   ├── run\_experiments\_ab.sh    # ablation study automation
-│   ├── run\_synthetic.sh         # synthetic dataset experiments
-│   ├── preprocess\_dataset.py    # preprocess (date/time column fixes)
-│   └── dynamic\_corr\_compare.py  # correlation statistics across datasets
-│
-├── outputs\_dynamic\_corr/   # correlation & adjacency visualizations
-├── train.py                # unified training entry
-└── README.md
-
-````
 
 ---
 
@@ -153,4 +114,3 @@ If you find this repository useful, please cite:
 * Explore **equivariance–expressivity trade-offs** in dynamic graphs.
 * Benchmarks on **climate & energy systems** with higher spatio-temporal resolution.
 
-```

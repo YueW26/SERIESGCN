@@ -2,18 +2,6 @@
 # SeriesGCN: Capturing High-Order Covariance with Message Passing
 
 
----
-
-## Motivation
-
-Multivariate time series forecasting (MTSF) is essential in domains such as energy forecasting, finance, and climate science.  
-Recent graph-based methods encode pairwise correlations as a **static adjacency matrix** and leverage Graph Neural Networks (GNNs) for forecasting.  
-
-However, **static graphs fail in dynamic correlation scenarios**, where cross-variable dependencies evolve rapidly (e.g., energy prices under political shocks, or load under extreme weather).  
-Our experiments show that many popular GNNs generalize poorly in such settings and can even be outperformed by structure-agnostic baselines.
-
----
-
 
 ---
 

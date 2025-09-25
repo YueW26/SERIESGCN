@@ -25,9 +25,9 @@ Our experiments show that many popular GNNs generalize poorly in such settings a
    - Introduce quantitative measures (first-/second-order moments) to characterize correlation dynamics.
 
 2. **New Model: SeriesGCN**  
-   - (D1) **High-order moment message passing** to capture beyond pairwise covariance.  
-   - (D2) **Dual graph propagation** combining static and dynamic views.  
-   - (D3) **Frequency separation** to distinguish low- and high-frequency representations.  
+   - **High-order moment message passing** to capture beyond pairwise covariance.  
+   - **Dual graph propagation** combining static and dynamic views.  
+   - **Frequency separation** to distinguish low- and high-frequency representations.  
 
 3. **Extensive Evaluation**  
    - **Synthetic datasets** with tunable correlation dynamics (Easy → Very Hard).  

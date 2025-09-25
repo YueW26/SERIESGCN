@@ -123,83 +123,76 @@ def configure_dataset_params(args):
         args.num_nodes = 10
         args.adjdata = 'data/sensor_graph/adj_mx_france.pkl'
         args.save = './garage/france/'
-        print("检测到原始France数据集")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("France")
+        print(f"n={args.num_nodes}, a阵={args.adjdata}")
 
     elif 'GERMANY' in data_path:
         args.num_nodes = 16
         args.adjdata = 'data/sensor_graph/adj_mx_germany.pkl'
         args.save = './garage/germany/'
-        print("检测到Germany数据集")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
-
-    elif 'METR' in data_path:
-        args.num_nodes = 207
-        args.adjdata = 'data/sensor_graph/adj_mx.pkl'
-        args.save = './garage/metr/'
-        print("检测到METR-LA数据集")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("Germany")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
 
     elif 'BAY' in data_path:
         args.num_nodes = 325
         args.adjdata = 'data/sensor_graph/adj_mx_bay.pkl'
         args.save = './garage/bay/'
-        print("检测到PEMS-BAY数据集")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("PEMS-BAY")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
 
     elif 'SYNTHETIC_EASY' in data_path:
         args.num_nodes = 12
         args.adjdata = 'data/sensor_graph/adj_mx_synthetic_easy.pkl'
         args.save = './garage/synth_easy/'
-        print("检测到合成数据集：SYNTHETIC_EASY")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("SYNTHETIC_EASY")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
 
     elif 'SYNTHETIC_MEDIUM' in data_path:
         args.num_nodes = 12
         args.adjdata = 'data/sensor_graph/adj_mx_synthetic_medium.pkl'
         args.save = './garage/synth_medium/'
-        print("检测到合成数据集：SYNTHETIC_MEDIUM")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("SYNTHETIC_MEDIUM")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
 
     elif 'SYNTHETIC_HARD' in data_path:
         args.num_nodes = 12
         args.adjdata = 'data/sensor_graph/adj_mx_synthetic_hard.pkl'
         args.save = './garage/synth_hard/'
-        print("检测到合成数据集：SYNTHETIC_HARD")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("SYNTHETIC_HARD")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
 
     elif 'SYNTHETIC_VERY_HARD' in data_path:
         args.num_nodes = 12
         args.adjdata = 'data/sensor_graph/adj_mx_synthetic_very_hard.pkl'
         args.save = './garage/synth_very_hard/'
-        print("检测到合成数据集：SYNTHETIC_VERY_HARD")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("SYNTHETIC_VERY_HARD")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
 
     elif 'SOLAR' in data_path:
         args.num_nodes = 137
         args.adjdata = 'data/sensor_graph/adj_mx_solar.pkl'
         args.save = './garage/solar/'
-        print("检测到Solar数据集")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("Solar")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
 
     elif 'ELECTRICITY' in data_path:
         args.num_nodes = 321
         args.adjdata = 'data/sensor_graph/adj_mx_electricity.pkl'
         args.save = './garage/electricity/'
-        print("检测到Electricity数据集")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("Electricity")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
         
     elif 'COVID19_CA55' in data_path:
         args.num_nodes = 55
         args.adjdata = 'data/sensor_graph/adj_mx_covid19_CA55.pkl'
         args.save = './garage/covid19/'
-        print("检测到Covid19-CA55数据集")
-        print(f"配置参数: 节点数={args.num_nodes}, 邻接矩阵={args.adjdata}")
+        print("Covid19-CA55")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
 
 
     else:
-        print(f"未识别的数据集: {data_path}")
-        print(f"使用默认配置: 节点数={args.num_nodes}")
+        print(f"no: {data_path}")
+        print(f"n={args.num_nodes}, a={args.adjdata}")
 
     os.makedirs(args.save, exist_ok=True)
     return args
@@ -242,7 +235,7 @@ def run_experiments_with_different_seq_lengths():
         args.pred_length = seq_len
         args.expid = seq_len
 
-        print(f"为 seq_length={seq_len}, pred_length={seq_len} 生成数据...")
+        print(f"为 seq_length={seq_len}, pred_length={seq_len} ...")
         generate_data_for_seq_length(seq_len, seq_len)
 
         experiment_start_time = time.time()
@@ -275,8 +268,8 @@ def generate_data_for_seq_length(seq_length, pred_length):
         process_script = 'process_germany_with_dataloader.py'
         data_file = f'data/GERMANY/train.npz'
     else:
-        print(f"新的数据集类型: {data_path}")
-        print("使用现有数据")
+        print(f"new: {data_path}")
+        print("use")
         return
 
     regenerate = True
@@ -286,15 +279,15 @@ def generate_data_for_seq_length(seq_length, pred_length):
             data = np.load(data_file)
             existing_seq_len = data['x'].shape[1]
             if existing_seq_len == seq_length:
-                print(f"{dataset_name}数据已存在且序列长度匹配 (seq_length={seq_length})")
+                print(f"{dataset_name}  (seq_length={seq_length})")
                 regenerate = False
             else:
-                print(f"现有{dataset_name}数据序列长度不匹配 ({existing_seq_len} != {seq_length})，重新生成...")
+                print(f" {dataset_name}  ({existing_seq_len} != {seq_length})，...")
         except Exception as e:
-            print(f"检查现有{dataset_name}数据时出错: {e}")
+            print(f" {dataset_name}: {e}")
 
     if regenerate:
-        print(f"生成{dataset_name}数据: seq_length={seq_length}, pred_length={pred_length}...")
+        print(f"{dataset_name}: seq_length={seq_length}, pred_length={pred_length}...")
         cmd = [
             sys.executable, process_script,
             '--step', 'process',
@@ -304,14 +297,14 @@ def generate_data_for_seq_length(seq_length, pred_length):
 
         try:
             result = subprocess.run(cmd, check=True, capture_output=True, text=True)
-            print(f"{dataset_name}数据生成完成")
+            print(f"{dataset_name}")
             output_lines = result.stdout.strip().split('\n')
             for line in output_lines[-5:]:
                 if line.strip():
                     print(f"  {line}")
         except subprocess.CalledProcessError as e:
-            print(f"{dataset_name}数据生成失败: {e}")
-            print(f"错误输出: {e.stderr}")
+            print(f"{dataset_name}: {e}")
+            print(f"e: {e.stderr}")
             raise
 
 
@@ -371,7 +364,7 @@ def main_experiment():
     global_step = 0
 
     for i in range(1, args.epochs+1):
-        # 初始化训练/验证指标
+        # 
         train_loss, train_mae, train_mape, train_rmse, train_rse, train_corr = [], [], [], [], [], []
         valid_loss, valid_mae, valid_mape, valid_rmse, valid_rse, valid_corr = [], [], [], [], [], []
 
@@ -459,7 +452,7 @@ def main_experiment():
                       (t2 - t1)),
               flush=True)
 
-        # 保存 adjacency 矩阵
+        # adjacency 
         torch.save(engine.model.powermix_convs[0].adj_1, f"adj1_{i}.pt") 
         torch.save(engine.model.powermix_convs[0].adj_2, f"adj2_{i}.pt") 
 
@@ -634,7 +627,7 @@ if __name__ == "__main__":
     total_start_time = time.time()
 
     if args.run_multiple_experiments:
-        print("运行多个序列长度实验...")
+        print("multi...")
         results = run_experiments_with_different_seq_lengths()
         total_end_time = time.time()
         total_time = total_end_time - total_start_time
@@ -651,9 +644,9 @@ if __name__ == "__main__":
                   f"RSE={result['test_rse_avg']:.4f}, "
                   f"Corr={result['test_corr_avg']:.4f}")
     else:
-        print("运行单个实验...")
-        print(f"配置: seq_length={args.seq_length}, pred_length={args.pred_length}, enhance={args.enhance}")
-        print(f"为 seq_length={args.seq_length}, pred_length={args.pred_length} 生成数据...")
+        print("single...")
+        print(f"a: seq_length={args.seq_length}, pred_length={args.pred_length}, enhance={args.enhance}")
+        print(f"for seq_length={args.seq_length}, pred_length={args.pred_length} ...")
         result = main_experiment()
         total_end_time = time.time()
         total_time = total_end_time - total_start_time

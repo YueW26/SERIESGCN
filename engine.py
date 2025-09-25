@@ -10,7 +10,7 @@ import torch.nn as nn
 class trainer():
     def __init__(self, scaler, in_dim, seq_length, num_nodes, nhid, dropout, lrate, wdecay,
                 device, supports, gcn_bool, addaptadj, aptinit, pred_length=12,
-                # ==== 新增模型配置参数 ====
+                #
                 diag_mode="self_and_neighbor",
                 use_power=False, power_order=2, power_init="plain",
                 use_cheby=False, cheby_k=3,
@@ -30,7 +30,7 @@ class trainer():
             dilation_channels=nhid,
             skip_channels=nhid * 8,
             end_channels=nhid * 16,
-            # ==== 新增传递给 gwnet 的参数 ====
+            # 
             diag_mode=diag_mode,
             use_power=use_power,
             power_order=power_order,

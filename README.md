@@ -1,10 +1,6 @@
 
 # SeriesGCN: Capturing High-Order Covariance with Message Passing
 
-This repository provides the official implementation of the paper:
-
-**"SeriesGCN: Capturing High-Order Covariance with Message Passing"**  
-*(Under review at ICLR 2026)*
 
 ---
 
@@ -17,22 +13,6 @@ However, **static graphs fail in dynamic correlation scenarios**, where cross-va
 Our experiments show that many popular GNNs generalize poorly in such settings and can even be outperformed by structure-agnostic baselines.
 
 ---
-
-## Contributions
-
-1. **Identify Limitations**  
-   - Systematically reveal how existing GNNs underperform in dynamic correlation regimes.  
-   - Introduce quantitative measures (first-/second-order moments) to characterize correlation dynamics.
-
-2. **New Model: SeriesGCN**  
-   - **High-order moment message passing** to capture beyond pairwise covariance.  
-   - **Dual graph propagation** combining static and dynamic views.  
-   - **Frequency separation** to distinguish low- and high-frequency representations.  
-
-3. **Extensive Evaluation**  
-   - **Synthetic datasets** with tunable correlation dynamics (Easy → Very Hard).  
-   - **Real-world benchmarks** (Exchange Rate, Electricity, Traffic, BigElectricity).  
-   - Up to **40% performance gain** in dynamic correlation scenarios.
 
 
 ---
@@ -111,25 +91,3 @@ EXP_ID=1 bash scripts/run_experiments_ab.sh
 ```
 
 ---
-
-## Citation
-
-If you find this repository useful, please cite:
-
-```
-@inproceedings{anonymous2026seriesgcn,
-  title={SeriesGCN: Capturing High-Order Covariance with Message Passing},
-  author={Anonymous},
-  booktitle={International Conference on Learning Representations (ICLR)},
-  year={2026}
-}
-```
-
----
-
-## Future Work
-
-* Extend SeriesGCN to **probabilistic forecasting**.
-* Explore **equivariance–expressivity trade-offs** in dynamic graphs.
-* Benchmarks on **climate & energy systems** with higher spatio-temporal resolution.
-

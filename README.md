@@ -48,7 +48,7 @@ pip install -r requirements.txt
 
 ### 2. Data Preparation
 
-* **Synthetic datasets**: generated with adjustable correlation ratios (`0.2, 0.4, 0.6, 0.8`).
+* **Synthetic datasets**: generated with adjustable correlation ratios.
 * **Real-world datasets**: Exchange Rate, Electricity, Traffic, BigElectricity (ENTSO-E).
 
 ```bash

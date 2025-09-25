@@ -77,22 +77,6 @@ EXP_ID=1 bash scripts/run_experiments_ab.sh
 
 ---
 
-## Reproducing Paper Results
-
-### Synthetic Benchmarks
-
-* Difficulty levels: **Easy → Very Hard**.
-* Metrics: MAE / RMSE + correlation dynamics (TCV, TGV, GSD).
-* Ablation: SeriesGCN’s (D1)+(D2) boosts accuracy by up to **40%** in dynamic settings.
-
-### Real-World Benchmarks
-
-* **Traffic**: highly periodic, validates robustness of static graphs.
-* **Exchange Rate**: weak correlations, highlights limits of baselines.
-* **Electricity & BigElectricity**: strong non-stationarity, SeriesGCN shows clear gains.
-
----
-
 ## Citation
 
 If you find this repository useful, please cite:

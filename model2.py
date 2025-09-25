@@ -4,9 +4,6 @@ import torch.nn as nn
 import torch.nn.functional as F
 from visualize import save_adj, save_adj_binary, to01, binarize01
 
-# =========================
-# 基础组件
-# =========================
 
 class nconv(nn.Module):
     def __init__(self):
@@ -28,14 +25,8 @@ class linear(nn.Module):
         return self.mlp(x)
 
 
-# =========================
-# Chebyshev 谱卷积
-# =========================
-
 class ChebConv(nn.Module):
-    """
-    K阶Chebyshev谱域图卷积；保留alpha系数用于可解释性导出。
-    """
+
     def __init__(self, c_in, c_out, K=3, dropout=0.0):
         super(ChebConv, self).__init__()
         assert K >= 1
@@ -45,7 +36,7 @@ class ChebConv(nn.Module):
             [nn.Conv2d(c_in, c_out, kernel_size=(1, 1), bias=True) for _ in range(K)]
         )
         self.alpha = nn.Parameter(torch.ones(K), requires_grad=True)
-        self.last_cheb_alphas = None  # 便于外部读取
+        self.last_cheb_alphas = None  # 
 
     @staticmethod
     def build_laplacian(A, add_self=True, eps=1e-5):
@@ -84,10 +75,6 @@ class ChebConv(nn.Module):
         return out
 
 
-# =========================
-# 空间域 GCN（支持 diffusion / 幂律）
-# =========================
-
 class gcn(nn.Module):
     def __init__(self, c_in, c_out, dropout, support_len=3, order=2,
                  use_power=False, diag_mode="self_and_neighbor"):
@@ -103,7 +90,7 @@ class gcn(nn.Module):
         c_total = (order * support_len + 1) * c_in
         self.mlp = linear(c_total, c_out)
 
-        # 幂律系数（每阶一个），便于可解释
+        # 
         self.power_coef = nn.Parameter(torch.ones(order), requires_grad=True)
         self.last_power_coef = None
 
@@ -131,7 +118,7 @@ class gcn(nn.Module):
         for A in supports:
             A_use = self._apply_diag_policy(A)
             if self.use_power: # power law
-                # A^k 逐阶拼接
+                # A^k
                 A_pows = self._matrix_powers(A_use, self.order)
                 for k_idx, Ak in enumerate(A_pows):
                     xk = self.nconv(x, Ak)
@@ -158,9 +145,7 @@ class gcn(nn.Module):
 # =========================
 
 class MixPropDual(nn.Module):
-    """
-    双图递推（固定邻接+自适应邻接）。
-    """
+
     def __init__(self, c_in, c_out, K=3, droprate=0.1, temperature=1.0,
                  diag_mode='self_and_neighbor', 
                  r_dim=10, 
@@ -185,7 +170,7 @@ class MixPropDual(nn.Module):
         # if embed_init == 'normal': ###
         #     nn.init.normal_(self.r1.weight, mean=0.0, std=0.02) ###
         # else: ###
-        #     # 默认 xavier ###
+        #     # xavier ###
         #     nn.init.xavier_uniform_(self.r1.weight) ###
         ###--------------------------------------------------------------------------------------###
         self.src_emb = nn.Embedding(r_dim, emb_dim)
@@ -239,38 +224,31 @@ class MixPropDual(nn.Module):
     #     return adj_2
 
     def _build_adj2_from_r1(self, N, device, node_idx: torch.Tensor = None):
-        """
-        用 Embedding 产生每个节点的向量并构造 adj_2
-        - N: 当前 batch/图的节点数
-        - device: 放置计算的设备
-        - node_idx: 可选，形如 [N] 的 LongTensor，指定节点的全局 ID 顺序。
-                    若为 None，则默认使用 [0..N-1]。
-        """
+     
         if node_idx is None:
             idx = torch.arange(N, device=device, dtype=torch.long)
         else:
             idx = node_idx.to(device=device, dtype=torch.long)
 
-        # 取出节点嵌入 R: [N, r_dim]
+        #  R: [N, r_dim]
         ###--------------------------------------------------------------------------------------###
         # R = self.r1(idx)
         
-        # # 归一化后做相似度，避免范数差异导致“量纲”主导
+        # # 
         # if self.use_cosine:
         #     R = F.normalize(R, p=2, dim=1)
 
-        # # 相似度矩阵 S: [N, N]
+        #  S: [N, N]
         # S = R @ R.t()
         ###--------------------------------------------------------------------------------------###
         U = self.src_emb(idx)   # [N, emb_dim]
         V = self.dst_emb(idx)   # [N, emb_dim]
 
-        # 相似度矩阵 S: [N, N]
+        #  S: [N, N]
         S = U @ V.t()
         ###--------------------------------------------------------------------------------------###
-        S = F.relu(S)  # 保证非负，便于 softmax 温度控制
-
-        # 行 softmax + 对角处理 + 训练期 dropout
+        S = F.relu(S)  #
+        # 
         adj_2 = torch.softmax(S / max(self.temperature, 1e-6), dim=1)
         adj_2 = self._apply_diag(adj_2, self.diag_mode)
         if self.training and self.droprate > 0:
@@ -289,13 +267,13 @@ class MixPropDual(nn.Module):
         ###--------------------------------------------------------------------------------------###
         inj = [self.k_convs[k](x) * self.gates[k] for k in range(self.K)]
 
-        # 路一
+        # 1
         z = inj[0].permute(0, 3, 2, 1).contiguous().view(B * T, N, -1)
         for k in range(1, self.K):
             z = self.adj_1 @ z + inj[k].permute(0, 3, 2, 1).contiguous().view(B * T, N, -1)
         z = z.view(B, T, N, -1).permute(0, 3, 2, 1).contiguous()
 
-        # 路二
+        # 2
         z_fix = inj[0].permute(0, 3, 2, 1).contiguous().view(B * T, N, -1)
         for k in range(1, self.K):
             z_fix = self.adj_2 @ z_fix + inj[k].permute(0, 3, 2, 1).contiguous().view(B * T, N, -1)
@@ -309,11 +287,7 @@ class MixPropDual(nn.Module):
 # =========================
 
 class PowerMixDual(nn.Module):
-    """
-    融合幂律传播和双图递推：
-    - 双图 (固定图 + 自适应图)
-    - 每阶传播带有 power-law 系数 alpha_k
-    """
+
     def __init__(self, c_in, c_out, K=3, droprate=0.1, temperature=1.0,
                  diag_mode='self_and_neighbor', r_dim=10, embed_init='xavier', emb_dim=16):
         super().__init__()
@@ -333,7 +307,7 @@ class PowerMixDual(nn.Module):
         # if embed_init == 'normal':
         #     nn.init.normal_(self.r1.weight, mean=0.0, std=0.02)
         # else:
-        #     # 默认 xavier
+        #     # xavier
         #     nn.init.xavier_uniform_(self.r1.weight)
         ###--------------------------------------------------------------------------------------###
         self.src_emb = nn.Embedding(r_dim, emb_dim)
@@ -392,7 +366,7 @@ class PowerMixDual(nn.Module):
         ###--------------------------------------------------------------------------------------###
         inj = [self.k_convs[k](x) * self.gates[k] for k in range(self.K)]
 
-        # 双图幂律递推
+        #
         z = inj[0].permute(0, 3, 2, 1).contiguous().view(B * T, N, -1)
         z2 = z.clone()
         for k in range(1, self.K):
@@ -426,7 +400,7 @@ class gwnet(nn.Module):
                  kernel_size=2,
                  blocks=4,
                  layers=2,
-                 # ========= 新增：全部由 argparse / 显式参数控制 =========
+                 # ==== =========
                  diag_mode: str = "self_and_neighbor",                       # {"self_and_neighbor","neighbor"}
                  # PowerLaw
                  use_power: bool = False,
@@ -447,7 +421,7 @@ class gwnet(nn.Module):
                  powermix_temp: float = 1.0):
         super(gwnet, self).__init__()
         
-        # ====== 基础配置 ======
+        # ====== ====
         self.device = device
         self.dropout = dropout
         self.blocks = blocks
@@ -466,7 +440,7 @@ class gwnet(nn.Module):
         self.end_channels = end_channels
         self.kernel_size = kernel_size
 
-        # ====== 新增：显式参数（替代环境变量）======
+        # ====== 
         # diag
         if diag_mode not in {"self_and_neighbor", "neighbor"}:
             raise ValueError(f"diag_mode must be 'self_and_neighbor' or 'neighbor', got {diag_mode}")
@@ -496,7 +470,7 @@ class gwnet(nn.Module):
         self.powermix_droprate = float(powermix_dropout)
         self.powermix_temperature = float(powermix_temp)
 
-        # 模块容器
+        # 
         self.filter_convs = nn.ModuleList()
         self.gate_convs = nn.ModuleList()
         self.residual_convs = nn.ModuleList()
@@ -511,7 +485,7 @@ class gwnet(nn.Module):
                                     out_channels=residual_channels,
                                     kernel_size=(1, 1))
 
-        # 计算感受野
+        # 
         receptive_field = 1
         new_dilation = 1
         for _b in range(blocks):
@@ -524,7 +498,7 @@ class gwnet(nn.Module):
         self.supports = supports
         self.supports_len = len(supports) if supports is not None else 0
 
-        # 自适应邻接
+        # 
         if gcn_bool and addaptadj:
             if aptinit is None:
                 if self.supports is None:
@@ -541,7 +515,7 @@ class gwnet(nn.Module):
                 self.supports_len += 1
 
         
-        # 构建层
+        # 
         new_dilation = 1
         for _b in range(blocks):
             for _i in range(layers):
@@ -560,7 +534,7 @@ class gwnet(nn.Module):
                 self.skip_convs.append(nn.Conv2d(dilation_channels, skip_channels, kernel_size=(1, 1)))
                 self.bn.append(nn.BatchNorm2d(residual_channels))
 
-                # spatial模块选择
+                # spatial
                 if gcn_bool:
                     if self.use_cheby:
                         self.cheb_convs.append(
@@ -663,7 +637,7 @@ class gwnet(nn.Module):
                     skip = 0
                 skip = s + skip
 
-                # 空间聚合
+                # 
                 if self.gcn_bool and (new_supports is not None):
                     if self.cheb_convs[layer_idx] is not None:
                         acc = 0
@@ -690,7 +664,7 @@ class gwnet(nn.Module):
                 else:
                     x = self.residual_convs[layer_idx](x)
 
-                # 残差 & BN
+                # 
                 x = x + residual[:, :, :, -x.size(3):]
                 x = self.bn[layer_idx](x)
                 layer_idx += 1
